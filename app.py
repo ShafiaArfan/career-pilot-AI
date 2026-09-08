@@ -17,18 +17,18 @@ if "GEMINI_API_KEY" not in st.secrets:
 client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
 def call_gemini(prompt: str) -> str:
-    for attempt in range(3):
+    delay = 5  # Start with a 5-second pause if it fails
+    for attempt in range(4): # Try up to 4 times
         try:
             res = client.models.generate_content(model="gemini-3.6-flash", contents=prompt)
             return res.text
-        except Exception:
-            time.sleep(2)
+        except Exception as e:
+            if attempt == 3:
+                return f"Error connecting to AI after multiple attempts: {str(e)}"
+            time.sleep(delay)
+            delay *= 2  # Wait 5s, then 10s, then 20s
+            
     return "Error connecting to AI."
-
-def extract_text_from_pdf(uploaded_file):
-    doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
-    return "".join(page.get_text() for page in doc)
-
 # --- 2. LANGGRAPH STATE & NODES ---
 class CareerState(TypedDict):
     cv_text: str
