@@ -29,6 +29,11 @@ def call_gemini(prompt: str) -> str:
             delay *= 2  # Wait 5s, then 10s, then 20s
             
     return "Error connecting to AI."
+
+def extract_text_from_pdf(uploaded_file):
+    doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
+    return "".join(page.get_text() for page in doc)
+
 # --- 2. LANGGRAPH STATE & NODES ---
 class CareerState(TypedDict):
     cv_text: str
@@ -119,3 +124,6 @@ if st.button("Analyze & Generate Roadmap", type="primary"):
             
             st.subheader("📄 Executive Career Report")
             st.write(results['final_report'])
+                
+    
+
