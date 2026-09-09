@@ -104,15 +104,22 @@ with col1:
 with col2:
     job_desc = st.text_area("Target Job Description", height=100)
 
+# --- OPTIMIZED CACHING FOR DEMO ---
+@st.cache_data(show_spinner=False)
+def run_career_pipeline(cv_text_input, job_desc_input):
+    """Caches the output so identical inputs load instantly on subsequent runs."""
+    state = {"cv_text": cv_text_input, "job_description": job_desc_input}
+    return graph.invoke(state)
+
 if st.button("Analyze & Generate Roadmap", type="primary"):
     if not uploaded_cv or not job_desc:
         st.warning("Please upload a CV and provide a Job Description.")
     else:
-        with st.spinner("Multi-Agent LangGraph Pipeline Running... This takes about 30 seconds."):
+        with st.spinner("Multi-Agent LangGraph Pipeline Running... (This takes 30-40 seconds the FIRST time)"):
             cv_text = extract_text_from_pdf(uploaded_cv)
-            initial_state = {"cv_text": cv_text, "job_description": job_desc}
             
-            results = graph.invoke(initial_state)
+            # This calls the cached function instead of running the API every time
+            results = run_career_pipeline(cv_text, job_desc)
             
             st.success("Analysis Complete!")
             
